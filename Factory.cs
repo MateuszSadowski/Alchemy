@@ -18,7 +18,7 @@ namespace Alchemy
         {
             SemFreeSlot = new Semaphore(2, 2);
             SemCurses = new Semaphore(1, 1);
-            SemPurged = new Semaphore(0, 1);
+            SemPurged = new Semaphore(1, 1);
             Resource = res;
             Curses = 0;
             random = new Random();
@@ -62,31 +62,20 @@ namespace Alchemy
 
         private void Produce()
         {
-            PrintFactoryMessage("is waiting for a free slot.");
+            PrintFactoryMessage("is waiting for a free slot...");
             SemFreeSlot.WaitOne();  //wait for a free slot
 
-            PrintFactoryMessage("has a free slot. Checking if cursed.");
-            SemCurses.WaitOne();    //check if there is no curse
-            if(0 != Curses)
-            {
-                PrintFactoryMessage("has " + Curses + " curses left.");
-                SemCurses.Release();
-                PrintFactoryMessage("is waiting to be purged.");
-                SemPurged.WaitOne();    //wait for the curses to be purged
-                PrintFactoryMessage("has been PURGED.");
-            }
-            else
-            {
-                SemCurses.Release();
-            }
+            PrintFactoryMessage("has a free slot. Trying to produce...");
+            SemPurged.WaitOne();    //wait for the curses to be purged or continue if clean
 
-            PrintFactoryMessage("is clean. Starting production.");
+            PrintFactoryMessage("is clean. Producing...");
             Thread.Sleep(random.Next(1, 5) * 1000);   //produce over random time duration
             SemAlchemist.WaitOne(); //mock alchemist
             resourceCount++;    //mock alchemist
             //signal that there is a resource available 
             SemAlchemist.Release(); //mock alchemist
             PrintFactoryMessage("finished production.");
+            SemPurged.Release();
         }
 
         public void PrintFactoryMessage(string message)
