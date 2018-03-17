@@ -31,7 +31,8 @@ namespace Alchemy
         {
             while(true)
             {
-                switch(random.Next(1,2))
+                switch(random.Next(1,3))    //will cause factories too block
+                                            //if resources full and try to produce
                 {
                     case 1:
                         Produce();
@@ -63,6 +64,7 @@ namespace Alchemy
         {
             PrintFactoryMessage("is waiting for a free slot.");
             SemFreeSlot.WaitOne();  //wait for a free slot
+
             PrintFactoryMessage("has a free slot. Checking if cursed.");
             SemCurses.WaitOne();    //check if there is no curse
             if(0 != Curses)
@@ -77,12 +79,13 @@ namespace Alchemy
             {
                 SemCurses.Release();
             }
+
             PrintFactoryMessage("is clean. Starting production.");
+            Thread.Sleep(random.Next(1, 5) * 1000);   //produce over random time duration
             SemAlchemist.WaitOne(); //mock alchemist
             resourceCount++;    //mock alchemist
+            //signal that there is a resource available 
             SemAlchemist.Release(); //mock alchemist
-            Thread.Sleep(random.Next(1, 5) * 1000);   //produce over random time duration
-            //signal that there is Resource available 
             PrintFactoryMessage("finished production.");
         }
 

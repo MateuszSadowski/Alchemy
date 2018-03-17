@@ -19,6 +19,8 @@ namespace Alchemy
             RunFactories();
             RunWizards();
             RunWarlocks();
+
+            System.Console.WriteLine("Initialized everything.");
         }
 
         static void InitializeFactories()
