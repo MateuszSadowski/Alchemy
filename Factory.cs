@@ -7,21 +7,24 @@ namespace Alchemy
     {
         public Semaphore SemFreeSlot { get; private set; }
         public Semaphore SemCurses { get; private set; }
-        public Semaphore SemPurged { get; private set; }
+        public Semaphore SemGoodToGo { get; private set; }
+        public Semaphore SemResourceProduced { get; set; }
         public int Curses { get; set; }
         public Resource Resource {get; private set; }
         private Random random;
         private int resourceCount;  //mock alchemists
         private Semaphore SemAlchemist;
+        public Warehouse Warehouse;
 
-        public Factory(Resource res)
+        public Factory(Resource res, Warehouse warehouse, Semaphore semResourceProduced)
         {
             SemFreeSlot = new Semaphore(2, 2);
             SemCurses = new Semaphore(1, 1);
-            SemPurged = new Semaphore(1, 1);
+            SemGoodToGo = new Semaphore(1, 1);
             Resource = res;
-            Curses = 0;
             random = new Random();
+            Warehouse = warehouse;
+            SemResourceProduced = semResourceProduced;
             //mock alchemist
             resourceCount = 0;
             SemAlchemist = new Semaphore(1, 1);
@@ -66,16 +69,18 @@ namespace Alchemy
             SemFreeSlot.WaitOne();  //wait for a free slot
 
             PrintFactoryMessage("has a free slot. Trying to produce...");
-            SemPurged.WaitOne();    //wait for the curses to be purged or continue if clean
+            SemGoodToGo.WaitOne();    //wait for the curses to be purged or continue if clean
 
             PrintFactoryMessage("is clean. Producing...");
             Thread.Sleep(random.Next(1, 5) * 1000);   //produce over random time duration
-            SemAlchemist.WaitOne(); //mock alchemist
-            resourceCount++;    //mock alchemist
-            //signal that there is a resource available 
-            SemAlchemist.Release(); //mock alchemist
+            Warehouse.SemWarehouse.WaitOne(); 
+            Warehouse.AvailableResources[(int)Resource]++;   
+            //signal that there is a resource available
+            SemResourceProduced.Release();  //TODO: After or before releasing semwarehouse??
+            Warehouse.SemWarehouse.Release();
+
             PrintFactoryMessage("finished production.");
-            SemPurged.Release();
+            SemGoodToGo.Release();
         }
 
         public void PrintFactoryMessage(string message)
