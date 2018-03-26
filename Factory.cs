@@ -5,20 +5,20 @@ namespace Alchemy
 {
     public class Factory
     {
-        public Semaphore SemFreeSlot { get; private set; }
+        //public Semaphore SemFreeSlot { get; private set; }
         public Semaphore SemCurses { get; private set; }
         public Semaphore SemGoodToGo { get; private set; }
-        public Semaphore SemResourceProduced { get; set; }
+        public SemaphoreSlim SemResourceProduced { get; set; }
         public int Curses { get; set; }
         public Resource Resource {get; private set; }
         private Random random;
-        private int resourceCount;  //mock alchemists
-        private Semaphore SemAlchemist;
+        // private int resourceCount;  //mock alchemists
+        // private Semaphore SemAlchemist;
         public Warehouse Warehouse;
 
-        public Factory(Resource res, Warehouse warehouse, Semaphore semResourceProduced)
+        public Factory(Resource res, Warehouse warehouse, SemaphoreSlim semResourceProduced)
         {
-            SemFreeSlot = new Semaphore(2, 2);
+            //SemFreeSlot = new Semaphore(2, 2);
             SemCurses = new Semaphore(1, 1);
             SemGoodToGo = new Semaphore(1, 1);
             Resource = res;
@@ -26,47 +26,48 @@ namespace Alchemy
             Warehouse = warehouse;
             SemResourceProduced = semResourceProduced;
             //mock alchemist
-            resourceCount = 0;
-            SemAlchemist = new Semaphore(1, 1);
+            // resourceCount = 0;
+            // SemAlchemist = new Semaphore(1, 1);
         }
 
         public void Work()
         {
             while(true)
             {
-                switch(random.Next(1,3))    //will cause factories too block
-                                            //if resources full and try to produce
-                {
-                    case 1:
-                        Produce();
-                        break;
-                    case 2:
-                        Consume();  //mock alchemists
-                        break;
-                }
+                Produce();
+                // switch(random.Next(1,3))    //will cause factories too block
+                //                             //if resources full and try to produce
+                // {
+                //     case 1:
+                //         Produce();
+                //         break;
+                //     case 2:
+                //         Consume();  //mock alchemists
+                //         break;
+                // }
             }
         }
 
-        private void Consume()
-        {
-            SemAlchemist.WaitOne();
-            if(resourceCount > 0)
-            {
-                PrintFactoryMessage("is consuming a resource.");
-                resourceCount--;
-                SemFreeSlot.Release();
-                SemAlchemist.Release();
-            }
-            else
-            {
-                SemAlchemist.Release();
-            }
-        }
+        // private void Consume()
+        // {
+        //     SemAlchemist.WaitOne();
+        //     if(resourceCount > 0)
+        //     {
+        //         PrintFactoryMessage("is consuming a resource.");
+        //         resourceCount--;
+        //         SemFreeSlot.Release();
+        //         SemAlchemist.Release();
+        //     }
+        //     else
+        //     {
+        //         SemAlchemist.Release();
+        //     }
+        // }
 
         private void Produce()
         {
-            PrintFactoryMessage("is waiting for a free slot...");
-            SemFreeSlot.WaitOne();  //wait for a free slot
+            //PrintFactoryMessage("is waiting for a free slot...");
+            Warehouse.SemFreeSlot[(int)Resource].WaitOne();  //wait for a free slot
 
             PrintFactoryMessage("has a free slot. Trying to produce...");
             SemGoodToGo.WaitOne();    //wait for the curses to be purged or continue if clean

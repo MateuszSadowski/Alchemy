@@ -18,7 +18,7 @@ namespace Alchemy
         {
             while(true)
             {
-                Thread.Sleep(random.Next(1, 5) * 1000);
+                Thread.Sleep(random.Next(5, 10) * 1000);
 
                 Factory factory = factories[random.Next(0, factories.Length - 1)];
 
@@ -26,7 +26,7 @@ namespace Alchemy
                 PrintWarlockMessage("is cursing " + factory.Resource + " factory.");
                 if(0 == factory.Curses)
                 {   //factory.SemPurged == 1
-                    factory.SemPurged.WaitOne();    //stop the factory from producing
+                    factory.SemGoodToGo.WaitOne();    //stop the factory from producing
                     factory.Curses++;
                     factory.SemCurses.Release();
                 }

@@ -18,8 +18,8 @@ namespace Alchemy
         {
             while(true)
             {
-                Thread.Sleep(random.Next(1, 5) * 1000);
-                PrintWizardMessage("is trying to purge curses.");
+                Thread.Sleep(random.Next(5, 10) * 1000);
+                //PrintWizardMessage("is trying to purge curses.");
 
                 foreach (var factory in factories)
                 {
@@ -34,13 +34,13 @@ namespace Alchemy
                     {
                         PrintWizardMessage("is purging " + factory.Resource + " factory.");
                         factory.Curses--;
-                        factory.SemPurged.Release();
+                        factory.SemGoodToGo.Release();
                         factory.SemCurses.Release();
                     }
                     else
                     {
                         //no curses, release and move on
-                        PrintWizardMessage("no curses to purge for " + factory.Resource + " factory.");
+                        //PrintWizardMessage("no curses to purge for " + factory.Resource + " factory.");
                         factory.SemCurses.Release();
                     }
                 }

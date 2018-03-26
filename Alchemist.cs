@@ -12,17 +12,19 @@ namespace Alchemy
         {
             Id = id;
             Type = type;
-        }
-
-        public void PrintAlchemistMessage(string message)
-        {
-            Console.WriteLine("[" + Id + ", " + Type + "] Alchemist " + message);
+            PrintAlchemistMessage("comes for resources.");
         }
 
         public void WaitForResources(Semaphore semAlchemist)
         {
             semAlchemist.WaitOne();
             //consume resource and quit
+            PrintAlchemistMessage("consumes resources and quits.");
+        }
+
+        public void PrintAlchemistMessage(string message)
+        {
+            Console.WriteLine("[" + Id + ", " + Type + "] Alchemist " + message);
         }
     }
 }
